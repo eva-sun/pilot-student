@@ -5,7 +5,7 @@
 Do prbs11 calculation
 
 Command input  format:
-    output unit n, data0 , data1, data2, data3,....,data n
+    output unit n, datain ,format(0:8bit 1:12bit)
 """
 import sys
 class bitCalculate(): 
@@ -67,7 +67,7 @@ class bitCalculate():
         prbs11_10 = self.prbs11(prbs11_09)
         prbs11_11 = self.prbs11(prbs11_10)
         prbs11_12 = self.prbs11(prbs11_11)
-        random0 =  (self.getBitVal(prbs11_11,0)<<11) +\
+        port0 =  (self.getBitVal(prbs11_11,0)<<11) +\
             (self.getBitVal(prbs11_10,0)<<10) + \
             (self.getBitVal(prbs11_09,0)<<9 )+ \
             (self.getBitVal(prbs11_08,0)<<8 )+ \
@@ -79,7 +79,7 @@ class bitCalculate():
             (self.getBitVal(prbs11_02,0)<<2 )+ \
             (self.getBitVal(prbs11_01,0)<<1 )+ \
             (self.getBitVal(datain,0))  
-        random1 =  (self.getBitVal(prbs11_11,1)<<11) +\
+        port1 =  (self.getBitVal(prbs11_11,1)<<11) +\
             (self.getBitVal(prbs11_10,1)<<10) + \
             (self.getBitVal(prbs11_09,1)<<9 )+ \
             (self.getBitVal(prbs11_08,1)<<8 )+ \
@@ -92,23 +92,25 @@ class bitCalculate():
             (self.getBitVal(prbs11_01,1)<<1 )+ \
             (self.getBitVal(datain,1))
         if format:
-            print(f"12bit data format of prbs11 data {hex(datain)}:")
-            print(f'port0 prbs11: {hex(random0)}')
-            print(f'port1 prbs11: {hex(random1)}')
+            print("port0 prbs11: {:#04x}".format(port0& 0x0fff))
+            print("port1 prbs11: {:#04x}\n".format(port1& 0x0fff))
         else:
-            print(f"8bit data format of prbs11 data {hex(datain)}:")
-            print(f'port0 prbs11: {hex(random0 & 0x0fff)}')
-            print(f'port1 prbs11: {hex(random1 & 0x0fff)}\n')
-        return prbs11_12      
+            print("port0 prbs11: {:#04x}".format(port0& 0x00ff))
+            print("port1 prbs11: {:#04x}\n".format(port1& 0x00ff))
+        dataNextIn = prbs11_12
+        return port0,port1,dataNextIn  
+    
+    def prbs11FinalOut(self,outCnt,datain,format=0):
+        if(format):
+            print(f"12bit data format of prbs11 data total {outCnt}:")
+        else:
+            print(f"8bit data format of prbs11 data total {outCnt}:")
+        for i in range(0,outCnt):
+            print(f"{i}:")
+            _,_,datain = self.prbs11WithFormat(datain,format)
+        pass
+        
 
 a = bitCalculate()
-datain = a.prbs11WithFormat(0x7ff)
-datain = a.prbs11WithFormat(datain)
-datain = a.prbs11WithFormat(datain)
-datain = a.prbs11WithFormat(datain)
-datain = a.prbs11WithFormat(datain)
-datain = a.prbs11WithFormat(datain)
-datain = a.prbs11WithFormat(datain)
-datain = a.prbs11WithFormat(datain)
-datain = a.prbs11WithFormat(datain)
-datain = a.prbs11WithFormat(datain)
+a.prbs11FinalOut(8,0x7ff)
+a.prbs11FinalOut(8,0x7ff,1)

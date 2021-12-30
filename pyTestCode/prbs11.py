@@ -8,6 +8,9 @@ Command input  format:
     output unit n, datain ,format(0:8bit 1:12bit)
 """
 import sys
+import colorama
+from colorama import init,Fore,Back,Style
+init(autoreset=True)
 class bitCalculate(): 
     def __init__(self): 
         pass
@@ -15,6 +18,7 @@ class bitCalculate():
     def getBitVal(self,datain, index): 
         """
         brief:git bit value 
+        
         :param datain: input data
         :param index: bit value
         :returns: bit value 0 or 1
@@ -34,6 +38,7 @@ class bitCalculate():
     def setBitVal(self,datain, index, val):
         """
         brief: change bit value
+        
         :param datain: original data
         :param index:  bit position ,index 0 from right
         :param val:    set bit value
@@ -51,10 +56,17 @@ class bitCalculate():
         
     def prbs11(self,datain):
         data = (self.getBitsVal(datain,9,0)<<1) + (self.getBitVal(datain,8)^self.getBitVal(datain,10))
-        # print(f'{hex(datain)} prbs11: {hex(data)}')
         return data
         
     def prbs11WithFormat(self,datain,format = 0): 
+        """
+        brief: calculate prbs11 and get port0 value and port 1 value and prbs11_12 for next calculation
+        
+        :param datain: datain to do the first calculation
+        :param foramt: 0: output get lower 8 bit data; 1:output get 12bit data
+        :returns: port0=>loop to get 12 prbs data, git each prbs data's bit 0
+                  port0=>loop to get 12 prbs data, git each prbs data's bit 1
+        """
         prbs11_01 = self.prbs11(datain)
         prbs11_02 = self.prbs11(prbs11_01)
         prbs11_03 = self.prbs11(prbs11_02)
@@ -101,16 +113,23 @@ class bitCalculate():
         return port0,port1,dataNextIn  
     
     def prbs11FinalOut(self,outCnt,datain,format=0):
+        """
+        brief: get outCnt output datas (include port0 and port1)
+        
+        :param outCnt: how many datas want to output
+        :param datain: the first data to do prbs11 calculation
+        :returns none
+        """        
         if(format):
-            print(f"12bit data format of prbs11 data total {outCnt}:")
+            print(Back.GREEN + Fore.YELLOW + f"12bit data format of prbs11 data total {outCnt}")
         else:
-            print(f"8bit data format of prbs11 data total {outCnt}:")
+            print(Back.GREEN + Fore.YELLOW + f"8bit data format of prbs11 data total {outCnt}")
         for i in range(0,outCnt):
             print(f"{i}:")
             _,_,datain = self.prbs11WithFormat(datain,format)
-        pass
-        
+        return None
 
-a = bitCalculate()
-a.prbs11FinalOut(8,0x7ff)
-a.prbs11FinalOut(8,0x7ff,1)
+if __name__ == '__main__':
+    a = bitCalculate()
+    a.prbs11FinalOut(10,0x7ff)
+    a.prbs11FinalOut(10,0x7ff,1)

@@ -11,13 +11,13 @@ import sys
 import colorama
 from colorama import init,Fore,Back,Style
 init(autoreset=True)
-class bitCalculate(): 
+class prbs11(): 
     def __init__(self): 
         pass
         
     def getBitVal(self,datain, index): 
         """
-        brief:git bit value 
+        brief:get bit value
         
         :param datain: input data
         :param index: bit value
@@ -29,11 +29,19 @@ class bitCalculate():
             return 0
         
     def getBitsVal(self,datain,bitEnd,bitStr):
+        """
+        brief:get [bitEnd:bitStr] value of datain
+        
+        :param datain: input data
+        :param bitEnd: range 0~31 and >bitStr
+        :param bitStr: range 0~31 and >bitEnd
+        :returns: bits value
+        """        
         dataout = 0
         for n in range(bitStr,bitEnd+1):
             dataout += datain & (1 << n)
         dataout >>= bitStr
-        return dataout 
+        return dataout    
 
     def setBitVal(self,datain, index, val):
         """
@@ -45,14 +53,23 @@ class bitCalculate():
         :returns: new data after bit change
         """
         if val:
-            datain = datain | (1 << index)
-            return datain 
+            return  datain | (1 << index)
         else:
-            datain & ~(1 << index)
-            return datain
+            return  datain & ~(1 << index)
         
     def setBitsVal(self,datain,bitEnd,bitStr,val):
-        pass
+        """
+        brief: change bits value
+        
+        :param datain: original data
+        :param bitEnd: range 0~31 and >bitStr
+        :param bitStr: range 0~31 and >bitEnd        
+        :param val:    set bits value
+        :returns: new data after bits change
+        """        
+        for i in range(bitStr,bitEnd+1):
+            datain = self.setBitVal(datain,i,(val>>(i-bitStr))&0x1)
+        return datain
         
     def prbs11(self,datain):
         data = (self.getBitsVal(datain,9,0)<<1) + (self.getBitVal(datain,8)^self.getBitVal(datain,10))
@@ -114,9 +131,9 @@ class bitCalculate():
     
     def prbs11FinalOut(self,outCnt,datain,format=0):
         """
-        brief: get outCnt output datas (include port0 and port1)
+        brief: get outCnt output data (include port0 and port1)
         
-        :param outCnt: how many datas want to output
+        :param outCnt: how many data want to output
         :param datain: the first data to do prbs11 calculation
         :returns none
         """        
@@ -130,6 +147,14 @@ class bitCalculate():
         return None
 
 if __name__ == '__main__':
-    a = bitCalculate()
-    a.prbs11FinalOut(10,0x7ff)
-    a.prbs11FinalOut(10,0x7ff,1)
+    p = prbs11()    
+    input = 0xffffffff
+    r = 0x4
+    bStr = 28
+    bEnd = 31
+    out = p.setBitsVal(input,bEnd,bStr,r)
+    print(f"replace {hex(input)} of [{bEnd}:{bStr}] with {hex(r)}:{hex(out)}")
+    
+    p.prbs11FinalOut(10,0x7ff)
+    p.prbs11FinalOut(10,0x7ff,1)
+    
